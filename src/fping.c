@@ -357,7 +357,7 @@ int per_recv_flag, report_all_rtts_flag, name_flag, addr_flag, backoff_flag, rdn
 int multif_flag, timeout_flag, fast_reachable;
 int outage_flag = 0;
 int timestamp_flag = 0;
-int random_data_flag = 0;
+int nonzero_payload_flag = 0;
 int cumulative_stats_flag = 0;
 #if defined(DEBUG) || defined(_DEBUG)
 int randomly_lose_flag, trace_flag, print_per_system_flag;
@@ -543,7 +543,7 @@ int main(int argc, char **argv)
         { "quiet", 'q', OPTPARSE_NONE },
         { "squiet", 'Q', OPTPARSE_REQUIRED },
         { "retry", 'r', OPTPARSE_REQUIRED },
-        { "random", 'R', OPTPARSE_NONE },
+        { "nonzero", 'Z', OPTPARSE_NONE },
         { "stats", 's', OPTPARSE_NONE },
         { "src", 'S', OPTPARSE_REQUIRED },
         { "timeout", 't', OPTPARSE_REQUIRED },
@@ -734,8 +734,8 @@ int main(int argc, char **argv)
             timestamp_flag = 1;
             break;
 
-        case 'R':
-            random_data_flag = 1;
+        case 'Z':
+            nonzero_payload_flag = 1;
             break;
 
         case 'l':
@@ -2981,7 +2981,7 @@ void usage(int is_error)
     fprintf(out, "   -p, --period=MSEC  interval between ping packets to one target (in ms)\n");
     fprintf(out, "                      (in loop and count modes, default: %.0f ms)\n", perhost_interval / 1e6);
     fprintf(out, "   -r, --retry=N      number of retries (default: %d)\n", DEFAULT_RETRY);
-    fprintf(out, "   -R, --random       random packet data (to foil link data compression)\n");
+    fprintf(out, "   -Z, --nonzero      non-zero packet data (same payload as ping 0xA ...)\n");
     fprintf(out, "   -S, --src=IP       set source address\n");
     fprintf(out, "   -t, --timeout=MSEC individual target initial timeout (default: %.0f ms,\n", timeout / 1e6);
     fprintf(out, "                      except with -l/-c/-C, where it's the -p period up to 2000 ms)\n");

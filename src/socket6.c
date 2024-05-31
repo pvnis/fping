@@ -115,6 +115,7 @@ int socket_sendto_ping_ipv6(int s, struct sockaddr* saddr, socklen_t saddr_len, 
 {
     struct icmp6_hdr* icp;
     int n;
+    size_t i;
 
     icp = (struct icmp6_hdr*)ping_buffer_ipv6;
     icp->icmp6_type = ICMP6_ECHO_REQUEST;
@@ -122,9 +123,9 @@ int socket_sendto_ping_ipv6(int s, struct sockaddr* saddr, socklen_t saddr_len, 
     icp->icmp6_seq = htons(icmp_seq_nr);
     icp->icmp6_id = icmp_id_nr;
 
-    if (random_data_flag) {
-        for (n = sizeof(struct icmp6_hdr); n < ping_pkt_size_ipv6; ++n) {
-            ping_buffer_ipv6[n] = random() & 0xFF;
+    if (nonzero_payload_flag) {
+        for (n = sizeof(struct icmp6_hdr), i = 0xA; n < ping_pkt_size_ipv6; ++n, i+=1) {
+            ping_buffer_ipv6[n] = i & 0xFF;
         }
     }
 

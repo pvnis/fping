@@ -133,6 +133,7 @@ int socket_sendto_ping_ipv4(int s, struct sockaddr* saddr, socklen_t saddr_len, 
 {
     struct icmp* icp;
     int n;
+    size_t i;
 
     icp = (struct icmp*)ping_buffer_ipv4;
 
@@ -142,9 +143,12 @@ int socket_sendto_ping_ipv4(int s, struct sockaddr* saddr, socklen_t saddr_len, 
     icp->icmp_seq = htons(icmp_seq_nr);
     icp->icmp_id = icmp_id_nr;
 
-    if (random_data_flag) {
-        for (n = ((char*)&icp->icmp_data - (char*)icp); n < ping_pkt_size_ipv4; ++n) {
-            ping_buffer_ipv4[n] = random() & 0xFF;
+    if (nonzero_payload_flag) {
+        // for (n = ((char*)&icp->icmp_data - (char*)icp); n < ping_pkt_size_ipv4; ++n) {
+        //     ping_buffer_ipv4[n] = random() & 0xFF;
+        // }
+        for(n = (char*) &icp->icmp_data - (char*)icp, i = 0xA; n < ping_pkt_size_ipv4; ++n, i += 1) {
+            ping_buffer_ipv4[n] = i & 0xFF;
         }
     }
 
