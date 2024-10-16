@@ -530,6 +530,7 @@ int main(int argc, char **argv)
         { "ttl", 'H', OPTPARSE_REQUIRED },
         { "interval", 'i', OPTPARSE_REQUIRED },
         { "iface", 'I', OPTPARSE_REQUIRED },
+        { "index", 'w', OPTPARSE_REQUIRED },
 #ifdef SO_MARK
         { "fwmark", 'k', OPTPARSE_REQUIRED },
 #endif
@@ -636,7 +637,15 @@ int main(int argc, char **argv)
                 usage(1);
             }
             perhost_interval = opt_value_float * 1000000;
+            break;
 
+        case 'w':
+            if (!sscanf(optparse_state.optarg, "%f", &opt_value_float))
+                usage(1);
+            if (opt_value_float < 0) {
+                usage(1);
+            }
+            initial_index = opt_value_float;
             break;
 
         case 'c':
@@ -2687,8 +2696,6 @@ void add_addr(char *name, char *host, struct sockaddr *ipaddr, socklen_t ipaddr_
     p->event_storage_timeout = (struct event *)calloc(event_storage_count, sizeof(struct event));
 
     /* schedule first ping */
-    // int32_t index = 10;
-    // fprintf(stdout, "index: %d\n", index);
     host_add_ping_event(p, initial_index, current_time_ns);
 
     num_hosts++;
