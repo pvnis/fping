@@ -328,6 +328,7 @@ struct in6_addr src_addr6;
 #endif
 
 /* global stats */
+int64_t initial_index = 0;
 int64_t max_reply = 0;
 int64_t min_reply = 0;
 int64_t total_replies = 0;
@@ -1478,7 +1479,7 @@ void main_loop()
                 }
             }
 
-            dbg_printf("next report  event in %0.f ms\n", wait_time_next_report / 1e6);
+            dbg_printf("next report event in %0.f ms\n", wait_time_next_report / 1e6);
         }
 
         /* if wait_time is still -1, it means that we are waiting for nothing... */
@@ -2686,7 +2687,9 @@ void add_addr(char *name, char *host, struct sockaddr *ipaddr, socklen_t ipaddr_
     p->event_storage_timeout = (struct event *)calloc(event_storage_count, sizeof(struct event));
 
     /* schedule first ping */
-    host_add_ping_event(p, 0, current_time_ns);
+    // int32_t index = 10;
+    // fprintf(stdout, "index: %d\n", index);
+    host_add_ping_event(p, initial_index, current_time_ns);
 
     num_hosts++;
 }
