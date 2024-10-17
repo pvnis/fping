@@ -82,6 +82,9 @@ extern "C" {
 
 #include <sys/select.h>
 
+#include <stdlib.h>
+#include <math.h>
+
 /*** compatibility ***/
 
 /* Mac OS X's getaddrinfo() does not fail if we use an invalid combination,
@@ -328,7 +331,9 @@ struct in6_addr src_addr6;
 #endif
 
 /* global stats */
+char distribution[100] = "periodic";
 unsigned int initial_seq_id = 0;
+double next_interval = 0;
 int64_t max_reply = 0;
 int64_t min_reply = 0;
 int64_t total_replies = 0;
@@ -401,6 +406,7 @@ void host_add_timeout_event(HOST_ENTRY *h, int index, int64_t ev_time);
 struct event *host_get_timeout_event(HOST_ENTRY *h, int index);
 void stats_add(HOST_ENTRY *h, int index, int success, int64_t latency);
 void update_current_time();
+double generate_interval(const char* distribution, double rate);
 
 /************************************************************
 
@@ -531,6 +537,7 @@ int main(int argc, char **argv)
         { "interval", 'i', OPTPARSE_REQUIRED },
         { "iface", 'I', OPTPARSE_REQUIRED },
         { "index", 'w', OPTPARSE_REQUIRED },
+        { "distribution", 'W', OPTPARSE_REQUIRED },
 #ifdef SO_MARK
         { "fwmark", 'k', OPTPARSE_REQUIRED },
 #endif
@@ -646,6 +653,11 @@ int main(int argc, char **argv)
                 usage(1);
             }
             initial_seq_id = opt_value_float;
+            break;
+
+        case 'W':
+            if(!sscanf(optparse_state.optarg, "%99s", distribution))
+                usage(1);
             break;
 
         case 'c':
@@ -1441,7 +1453,8 @@ void main_loop()
 
             /* Loop and count mode: schedule next ping */
             if (loop_flag || (count_flag && event->ping_index + 1 < count)) {
-                host_add_ping_event(h, event->ping_index + 1, event->ev_time + perhost_interval);
+                next_interval = generate_interval(distribution, perhost_interval);
+                host_add_ping_event(h, event->ping_index + 1, event->ev_time + next_interval);
             }
         }
 
@@ -3015,4 +3028,53 @@ void usage(int is_error)
     fprintf(out, "   -x, --reachable=N  shows if >=N hosts are reachable or not\n");
     fprintf(out, "   -X, --fast-reachable=N exits true immediately when N hosts are found\n");
     exit(is_error);
+}
+
+/************************************************************
+
+  Function: gaussian_random
+
+  Generate a Gaussian random number
+
+*************************************************************/
+// Function to generate a Gaussian-distributed random number
+double gaussian_random(double mean, double stddev) {
+    // Box-Muller transform
+    double u1 = ((double)rand() / (RAND_MAX + 1.0));
+    double u2 = ((double)rand() / (RAND_MAX + 1.0));
+    double z0 = sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2);
+    return z0 * stddev + mean;
+}
+
+/************************************************************
+
+  Function: uniform_random
+
+  Generate a uniform random number
+
+*************************************************************/
+double uniform_random(double min, double max) {
+    return min + ((double)rand() / (RAND_MAX + 1.0)) * (max - min);
+}
+
+/************************************************************
+
+  Function: generate_interval
+
+*************************************************************/
+double generate_interval(const char* distribution, double rate) {
+    double interval = 0.0;
+
+    if (strcmp(distribution, "gaussian") == 0) {
+        interval = fmax(0, gaussian_random(rate, rate / 2));
+    } else if (strcmp(distribution, "uniform") == 0) {
+        interval = uniform_random(0, 2 * rate);
+    } else if (strcmp(distribution, "periodic") == 0) {
+        interval = rate;
+    } else {
+        printf("Invalid distribution\n");
+        exit(1);
+    }
+
+    return interval;
 }
