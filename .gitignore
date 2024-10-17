@@ -6,7 +6,6 @@ src/*.gcda
 src/*.gcov
 src/tags
 .deps
-Makefile
 Makefile.in
 aclocal.m4
 autom4te.cache
