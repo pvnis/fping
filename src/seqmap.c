@@ -55,17 +55,18 @@
  */
 
 static SEQMAP_VALUE* seqmap_map = NULL;
-static unsigned int seqmap_next_id = 0;
+unsigned int seqmap_next_id = 0;
 
 #define SEQMAP_TIMEOUT_IN_NS 10000000000
 #define SEQMAP_UNASSIGNED_HOST_NR UINT_MAX
 
-void seqmap_init()
+void seqmap_init(unsigned int initial_seq_id)
 {
     seqmap_map = calloc(SEQMAP_MAXSEQ, sizeof(SEQMAP_VALUE));
     if (seqmap_map == NULL) {
         perror("malloc error (can't allocate seqmap_map)");
     }
+    seqmap_next_id = initial_seq_id;
 }
 
 unsigned int seqmap_add(unsigned int host_nr, unsigned int ping_count, int64_t timestamp)

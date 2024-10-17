@@ -14,7 +14,7 @@ typedef struct seqmap_value
 
 #define SEQMAP_MAXSEQ 65535
 
-void seqmap_init();
+void seqmap_init(unsigned int initial_seq_id);
 unsigned int seqmap_add(unsigned int host_nr, unsigned int ping_count, int64_t now);
 SEQMAP_VALUE *seqmap_fetch(unsigned int id, int64_t now);
 

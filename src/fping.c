@@ -328,7 +328,7 @@ struct in6_addr src_addr6;
 #endif
 
 /* global stats */
-int64_t initial_index = 0;
+unsigned int initial_seq_id = 0;
 int64_t max_reply = 0;
 int64_t min_reply = 0;
 int64_t total_replies = 0;
@@ -645,7 +645,7 @@ int main(int argc, char **argv)
             if (opt_value_float < 0) {
                 usage(1);
             }
-            initial_index = opt_value_float;
+            initial_seq_id = opt_value_float;
             break;
 
         case 'c':
@@ -1219,7 +1219,7 @@ int main(int argc, char **argv)
 
     last_send_time = 0;
 
-    seqmap_init();
+    seqmap_init(initial_seq_id);
 
     /* main loop */
     main_loop();
@@ -2696,7 +2696,7 @@ void add_addr(char *name, char *host, struct sockaddr *ipaddr, socklen_t ipaddr_
     p->event_storage_timeout = (struct event *)calloc(event_storage_count, sizeof(struct event));
 
     /* schedule first ping */
-    host_add_ping_event(p, initial_index, current_time_ns);
+    host_add_ping_event(p, 0, current_time_ns);
 
     num_hosts++;
 }
